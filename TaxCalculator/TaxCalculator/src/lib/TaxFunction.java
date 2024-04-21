@@ -8,29 +8,25 @@ public class TaxFunction {
     private static final int CHILD_TAX_FREE_ADDITION = 1500000; // Rp 1.500.000 per anak
 
 	public static int calculateTax(int monthlySalary, int otherMonthlyIncome, int numberOfMonthWorking, int deductible, boolean isMarried, int numberOfChildren) {
-		
-		int tax = 0;
-		
-		if (numberOfMonthWorking > 12) {
-			System.err.println("More than 12 month working per year");
-		}
-		
-		if (numberOfChildren > 3) {
-			numberOfChildren = 3;
-		}
-		
-		if (isMarried) {
-			tax = (int) Math.round(0.05 * (((monthlySalary + otherMonthlyIncome) * numberOfMonthWorking) - deductible - (54000000 + 4500000 + (numberOfChildren * 1500000))));
-		}else {
-			tax = (int) Math.round(0.05 * (((monthlySalary + otherMonthlyIncome) * numberOfMonthWorking) - deductible - 54000000));
-		}
-		
-		if (tax < 0) {
-			return 0;
-		}else {
-			return tax;
-		}
-			 
-	}
+        int annualIncome = (monthlySalary + otherMonthlyIncome) * numberOfMonthWorking;
+        int taxableIncome = calculateTaxableIncome(annualIncome, deductible, isMarried, numberOfChildren);
+        int tax = (int) Math.round(TAX_RATE * taxableIncome);
+
+        return tax < 0 ? 0 : tax;
+    }
+
+    private static int calculateTaxableIncome(int annualIncome, int deductible, boolean isMarried, int numberOfChildren) {
+        int taxFreeIncome = BASIC_TAX_FREE_INCOME;
+
+        if (isMarried) {
+            taxFreeIncome += MARRIED_TAX_FREE_ADDITION;
+        }
+
+        // Batasi jumlah anak hingga 3 anak
+        numberOfChildren = Math.min(numberOfChildren, 3);
+        taxFreeIncome += CHILD_TAX_FREE_ADDITION * numberOfChildren;
+
+        return annualIncome - deductible - taxFreeIncome;
+    }
 	
 }
